@@ -1,5 +1,11 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
+import Navbar from "./components/Navbar";
+import Hero from "./components/Hero"
+import RecipeSection from "./components/RecipeSection";
+import Features from "./components/Features";
+import Contact from "./components/Contact";
+import "./App.css";
 
 function App() {
     const [ingredient, setIngredient] = useState("");
@@ -37,36 +43,12 @@ function App() {
     };
 
     return (
-        <div>
-            <h1>Recipe Ingredient Converter</h1>
-            <input
-                type="text"
-                placeholder="Enter ingredient (e.g., baking powder)"
-                value={ingredient}
-                onChange={(e) => setIngredient(e.target.value)}
-            />
-            <button onClick={fetchIngredient}>Search</button>
-
-            {data && (
-                <div>
-                    <h2>{data.name}</h2>
-                    <p>Density: {data.density} g/ml</p>
-
-                    <input
-                        type="number"
-                        placeholder="Amount"
-                        value={amount}
-                        onChange={(e) => setAmount(e.target.value)}
-                    />
-                    <select value={unit} onChange={(e) => setUnit(e.target.value)}>
-                        <option value="cups">Cups</option>
-                        <option value="ml">Milliliters</option>
-                    </select>
-
-                    <button onClick={convertToGrams}>Convert to grams</button>
-                    <p>{converted && `${amount} ${unit} = ${converted}`}</p>
-                </div>
-            )}
+        <div className="min-h-screen bg-[#F9EAE1]">
+            <Navbar />
+            <Hero />
+            <RecipeSection />
+            <Features />
+            <Contact />
         </div>
     );
 }
