@@ -1,13 +1,12 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import axios from "axios";
-import Navbar from "./components/Navbar";    
+import Navbar from "./components/Navbar";
 import Hero from "./components/Hero";
 import RecipeSection from "./components/RecipeSection";
 import Features from "./components/Features";
 import "./App.css";
 
 function App() {
-   
 
     return (
         <Router>
