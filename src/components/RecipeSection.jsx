@@ -11,6 +11,7 @@ import {
   Pizza,
   Minus,
   Plus,
+  RefreshCw,
 } from "lucide-react";
 
 // Recipe Modal Component
@@ -19,6 +20,8 @@ const RecipeModal = ({ recipe, onClose }) => {
   const [multiplier, setMultiplier] = useState(1);
   // Add a state for the current servings
   const [currentServings, setCurrentServings] = useState(recipe.servings);
+  // Add state for unit preference
+  const [unitSystem, setUnitSystem] = useState("standard"); // options: "standard", "metric", "tbsp"
 
   if (!recipe) return null;
 
@@ -38,7 +41,18 @@ const RecipeModal = ({ recipe, onClose }) => {
     }
   };
 
-  // Safe parsing of ingredients with dual unit conversion and quantity multiplication
+  // Function to cycle through unit systems
+  const toggleUnitSystem = () => {
+    if (unitSystem === "standard") {
+      setUnitSystem("metric");
+    } else if (unitSystem === "metric") {
+      setUnitSystem("tbsp");
+    } else {
+      setUnitSystem("standard");
+    }
+  };
+
+  // Safe parsing of ingredients with unit conversion and quantity multiplication
   const parseIngredients = (ingredients) => {
     // Handle different input types
     if (typeof ingredients !== "string") {
@@ -80,8 +94,9 @@ const RecipeModal = ({ recipe, onClose }) => {
         }
       }
 
-      // Convert measurements to dual units (gram and tablespoon)
-      let gramValue = "";
+      // Convert measurements for different unit systems
+      let standardDisplay = `${adjustedQuantity} ${unit}`.trim();
+      let metricValue = "";
       let tbspValue = "";
 
       if (adjustedQuantity && unit) {
@@ -91,35 +106,35 @@ const RecipeModal = ({ recipe, onClose }) => {
           unit.toLowerCase() === "gram" ||
           unit.toLowerCase() === "grams"
         ) {
-          gramValue = adjustedQuantity;
-          tbspValue = (parseFloat(adjustedQuantity) / 15).toFixed(1); // Approx 15g = 1 tbsp
+          metricValue = `${adjustedQuantity}g`;
+          tbspValue = `${(parseFloat(adjustedQuantity) / 15).toFixed(1)} tbsp`;
         } else if (
           unit.toLowerCase() === "tbsp" ||
           unit.toLowerCase() === "tablespoon" ||
           unit.toLowerCase() === "tablespoons"
         ) {
-          tbspValue = adjustedQuantity;
-          gramValue = (parseFloat(adjustedQuantity) * 15).toFixed(0); // Approx 1 tbsp = 15g
+          metricValue = `${(parseFloat(adjustedQuantity) * 15).toFixed(0)}g`;
+          tbspValue = `${adjustedQuantity} tbsp`;
         } else if (
           unit.toLowerCase() === "tsp" ||
           unit.toLowerCase() === "teaspoon" ||
           unit.toLowerCase() === "teaspoons"
         ) {
-          tbspValue = (parseFloat(adjustedQuantity) / 3).toFixed(1); // 3 tsp = 1 tbsp
-          gramValue = (parseFloat(adjustedQuantity) * 5).toFixed(0); // Approx 1 tsp = 5g
+          metricValue = `${(parseFloat(adjustedQuantity) * 5).toFixed(0)}g`;
+          tbspValue = `${(parseFloat(adjustedQuantity) / 3).toFixed(1)} tbsp`;
         } else if (
           unit.toLowerCase() === "cup" ||
           unit.toLowerCase() === "cups"
         ) {
-          tbspValue = (parseFloat(adjustedQuantity) * 16).toFixed(1); // 1 cup = 16 tbsp
-          gramValue = (parseFloat(adjustedQuantity) * 240).toFixed(0); // Approx 1 cup = 240g
+          metricValue = `${(parseFloat(adjustedQuantity) * 240).toFixed(0)}g`;
+          tbspValue = `${(parseFloat(adjustedQuantity) * 16).toFixed(1)} tbsp`;
         } else if (
           unit.toLowerCase() === "oz" ||
           unit.toLowerCase() === "ounce" ||
           unit.toLowerCase() === "ounces"
         ) {
-          gramValue = (parseFloat(adjustedQuantity) * 28.35).toFixed(0); // 1 oz = 28.35g
-          tbspValue = (parseFloat(adjustedQuantity) * 2).toFixed(1); // Approx 1 oz = 2 tbsp
+          metricValue = `${(parseFloat(adjustedQuantity) * 28.35).toFixed(0)}g`;
+          tbspValue = `${(parseFloat(adjustedQuantity) * 2).toFixed(1)} tbsp`;
         }
         // Add more conversions as needed
       }
@@ -129,7 +144,8 @@ const RecipeModal = ({ recipe, onClose }) => {
         quantity: adjustedQuantity,
         unit,
         name,
-        gramValue,
+        standardDisplay,
+        metricValue,
         tbspValue,
       };
     });
@@ -157,6 +173,20 @@ const RecipeModal = ({ recipe, onClose }) => {
   // Calculate adjusted calories based on the multiplier
   const adjustedCalories = Math.round(recipe.calories * multiplier);
 
+  // Get the appropriate unit label for the toggle button
+  const getUnitLabel = () => {
+    switch (unitSystem) {
+      case "standard":
+        return "Standard";
+      case "metric":
+        return "Metric";
+      case "tbsp":
+        return "Tbsp";
+      default:
+        return "Units";
+    }
+  };
+
   return (
     <div className="fixed inset-0 bg-black bg-opacity-60 z-50 flex justify-center items-center p-4 overflow-y-auto">
       <div className="bg-white rounded-2xl max-w-4xl w-full max-h-[95vh] overflow-y-auto relative shadow-2xl">
@@ -166,6 +196,15 @@ const RecipeModal = ({ recipe, onClose }) => {
           className="absolute top-4 right-4 z-10 text-gray-600 hover:text-gray-900 bg-gray-100 rounded-full p-2"
         >
           ✕
+        </button>
+
+        {/* Unit Toggle Button */}
+        <button
+          onClick={toggleUnitSystem}
+          className="absolute top-4 right-16 z-10 flex items-center gap-1 bg-amber-100 hover:bg-amber-200 text-amber-700 px-3 py-2 rounded-full"
+        >
+          <RefreshCw size={16} />
+          <span>{getUnitLabel()}</span>
         </button>
 
         {/* Recipe Header */}
@@ -251,31 +290,29 @@ const RecipeModal = ({ recipe, onClose }) => {
               )}
             </h2>
             <div className="grid md:grid-cols-2 gap-4">
-              {parsedIngredients.map((ingredient, index) => (
-                <div
-                  key={index}
-                  className="bg-gray-50 rounded-lg p-3 flex items-start"
-                >
-                  {ingredient.quantity && (
-                    <div className="font-bold text-gray-700 mr-2 min-w-[90px]">
-                      <div>
-                        {ingredient.quantity} {ingredient.unit}
+              {parsedIngredients.map((ingredient, index) => {
+                // Determine which measurement to display based on unit system
+                let displayMeasurement = ingredient.standardDisplay;
+                if (unitSystem === "metric" && ingredient.metricValue) {
+                  displayMeasurement = ingredient.metricValue;
+                } else if (unitSystem === "tbsp" && ingredient.tbspValue) {
+                  displayMeasurement = ingredient.tbspValue;
+                }
+
+                return (
+                  <div
+                    key={index}
+                    className="bg-gray-50 rounded-lg p-3 flex items-start"
+                  >
+                    {ingredient.quantity && (
+                      <div className="font-bold text-gray-700 mr-2 min-w-[90px]">
+                        {displayMeasurement}
                       </div>
-                      {(ingredient.gramValue || ingredient.tbspValue) && (
-                        <div className="text-xs text-gray-500 font-normal mt-1">
-                          {ingredient.gramValue && `${ingredient.gramValue}g`}
-                          {ingredient.gramValue &&
-                            ingredient.tbspValue &&
-                            " / "}
-                          {ingredient.tbspValue &&
-                            `${ingredient.tbspValue} tbsp`}
-                        </div>
-                      )}
-                    </div>
-                  )}
-                  <span className="text-gray-600">{ingredient.name}</span>
-                </div>
-              ))}
+                    )}
+                    <span className="text-gray-600">{ingredient.name}</span>
+                  </div>
+                );
+              })}
             </div>
           </div>
 
