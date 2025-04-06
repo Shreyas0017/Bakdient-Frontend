@@ -232,12 +232,6 @@ const RecipeModal = ({ recipe, onClose }) => {
               label="Total Time"
               color="text-amber-500"
             />
-            <NutritionIcon
-              icon={Flame}
-              value={`${adjustedCalories} Cal`}
-              label="Calories"
-              color="text-red-500"
-            />
 
             {/* Servings with adjustment controls */}
             <div className="flex items-center gap-2 bg-gray-100 rounded-lg p-2">
@@ -468,10 +462,6 @@ const RecipeSection = () => {
                   <span className="flex items-center">
                     <Clock className="mr-1" size={16} />
                     {recipe.preparation_time + recipe.cooking_time} min
-                  </span>
-                  <span className="flex items-center">
-                    <Flame className="mr-1" size={16} />
-                    {recipe.calories} Cal
                   </span>
                 </div>
                 <p className="text-gray-600 text-sm mb-4">
